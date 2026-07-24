@@ -144,7 +144,7 @@ The PDF discusses...
 ```
 PDF_RAG_Chatbot/
 │
-├── PDF_RAG_Chatbot_Gemini_FAISS_LangChain.ipynb
+├── PDF_RAG_Chatbot.ipynb
 ├── README.md
 └── Data_Science Notes.pdf
 ```
