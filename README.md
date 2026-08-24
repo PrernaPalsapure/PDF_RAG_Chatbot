@@ -178,7 +178,7 @@ PDF_RAG_Chatbot/
 
 **Prerna Palsapure**
 
-Aspiring Data Analyst | Machine Learning Enthusiast | Learning Generative AI & LLM Applications
+AI/ML Engineer | Machine Learning | Generative AI | LLM & RAG Applications
 
 ---
 
