@@ -1,185 +1,272 @@
 # 📄 PDF RAG Chatbot using Gemini, LangChain & FAISS
 
-A Retrieval-Augmented Generation (RAG) based PDF Question Answering system built using **Google Gemini**, **LangChain**, and **FAISS**.
+A **Retrieval-Augmented Generation (RAG) based PDF Question Answering System** built using Python, Google Gemini, LangChain, FAISS, Streamlit, and FastAPI.
 
-The application allows users to ask questions about the contents of a PDF document by retrieving the most relevant text chunks using semantic search and generating context-aware responses using Gemini.
+This project allows users to ask questions about PDF documents. It retrieves relevant text chunks using semantic similarity search and generates context-aware answers using Google's Gemini language model.
 
----
+The project includes a Streamlit application, a separate FastAPI backend, and a Jupyter Notebook for exploring the RAG workflow.
 
 ## 🚀 Features
 
-- 📄 Load PDF documents
-- ✂️ Split text into overlapping chunks
-- 🔢 Generate vector embeddings using Gemini Embeddings
-- 🗄️ Store embeddings in FAISS Vector Database
-- 🔍 Perform semantic similarity search
-- 🤖 Generate accurate answers using Gemini LLM
-- ⚡ Built using LangChain Retrieval-Augmented Generation (RAG) pipeline
-
----
+- 📄 Load and process PDF documents
+- ✂️ Split extracted text into overlapping chunks
+- 🔢 Generate vector embeddings using Google Gemini Embeddings
+- 🗄️ Store and search embeddings using FAISS
+- 🔍 Retrieve relevant document chunks through semantic search
+- 🤖 Generate context-aware answers using Gemini Flash
+- 🖥️ Interactive PDF question-answering interface using Streamlit
+- ⚡ REST API for question answering using FastAPI
+- 📝 Request validation using Pydantic
+- 🔐 Load API credentials securely through environment variables
+- 📓 Jupyter Notebook for exploring the RAG pipeline
 
 ## 🛠️ Technologies Used
 
-- Python
-- Google Gemini API
-- LangChain
-- FAISS
-- PyPDFLoader
-- RecursiveCharacterTextSplitter
-- GoogleGenerativeAIEmbeddings
-- ChatGoogleGenerativeAI
+| Technology | Purpose |
+|---|---|
+| Python | Core programming language |
+| Streamlit | Web interface for PDF question answering |
+| FastAPI | REST API backend |
+| Pydantic | Request data validation |
+| LangChain | RAG pipeline and LLM integration |
+| Google Gemini API | Language model and embeddings |
+| FAISS | Vector storage and similarity search |
+| PyPDFLoader | PDF text extraction |
+| RecursiveCharacterTextSplitter | Text chunking |
+| Jupyter Notebook | Experimentation and workflow exploration |
 
----
+## 🏗️ Project Architecture
 
-## 📂 Project Workflow
+The project contains two Python applications that currently run independently.
 
+### 1. Streamlit Application — `app.py`
+
+The Streamlit application provides the user interface and runs the RAG workflow directly.
+
+Workflow:
+
+1. Upload a PDF document.
+2. Extract text using PyPDFLoader.
+3. Split the text into overlapping chunks.
+4. Generate embeddings using Google Gemini.
+5. Store the embeddings in FAISS.
+6. Retrieve relevant chunks for the user's question.
+7. Generate and display an answer using Gemini Flash.
+
+### 2. FastAPI Backend — `api.py`
+
+The FastAPI application exposes REST endpoints for health checking and question answering.
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/` | Check whether the API is running |
+| POST | `/ask` | Submit a question and receive an answer |
+
+The `/ask` endpoint accepts a JSON request:
+
+```json
+{
+  "question": "What is machine learning?"
+}
 ```
-PDF
-   │
-   ▼
+
+Example response:
+
+```json
+{
+  "question": "What is machine learning?",
+  "answer": "Machine learning is..."
+}
+```
+
+**Note:** The current FastAPI implementation loads `Data_Science Notes.pdf` when the application starts. The PDF must be available at the configured path. The Streamlit application separately processes the PDF uploaded by the user.
+
+The Streamlit application does not currently send requests to the FastAPI backend; they are separate implementations of the question-answering workflow.
+
+## 🔄 RAG Workflow
+
+```text
+PDF Document
+     |
+     v
 PyPDFLoader
-   │
-   ▼
-Extract Text
-   │
-   ▼
-Text Splitter
-   │
-   ▼
+     |
+     v
+Text Extraction
+     |
+     v
+Text Chunking
+     |
+     v
 Gemini Embeddings
-   │
-   ▼
-FAISS Vector Database
-   │
-   ▼
-Retriever
-   │
-   ▼
-Prompt Template
-   │
-   ▼
-Gemini LLM
-   │
-   ▼
+     |
+     v
+FAISS Vector Store
+     |
+     v
+Semantic Retrieval
+     |
+     v
+Relevant Context + Question
+     |
+     v
+Gemini Flash
+     |
+     v
 Generated Answer
 ```
 
----
+## ⚙️ How It Works
 
-## 📌 How It Works
+### Step 1 — PDF Loading
 
-### Step 1 — Load PDF
+PyPDFLoader extracts text from the PDF and preserves document metadata, such as page information.
 
-The PDF document is loaded using **PyPDFLoader**, which extracts the text along with page metadata.
+### Step 2 — Text Chunking
 
----
+RecursiveCharacterTextSplitter divides the extracted text into smaller, overlapping chunks.
 
-### Step 2 — Split the Text
+- Chunk size: 1000 characters
+- Chunk overlap: 200 characters
 
-The extracted text is divided into smaller overlapping chunks using **RecursiveCharacterTextSplitter**.
+Overlapping chunks help preserve context across chunk boundaries.
 
-This improves retrieval accuracy while preserving context.
+### Step 3 — Embedding Generation
 
-Example:
+GoogleGenerativeAIEmbeddings converts text chunks into numerical vectors that represent their semantic meaning.
 
-- Chunk Size = 1000
-- Chunk Overlap = 200
+### Step 4 — Vector Storage
 
----
+FAISS stores the embeddings and supports efficient similarity searches to identify relevant document chunks.
 
-### Step 3 — Create Embeddings
+### Step 5 — Context Retrieval
 
-Each chunk is converted into high-dimensional vector embeddings using
+When a user asks a question, the retriever searches for semantically relevant chunks.
 
-**GoogleGenerativeAIEmbeddings**
+- Streamlit application: retrieves up to 4 chunks.
+- FastAPI application: retrieves up to 3 chunks.
 
-Embeddings capture the semantic meaning of the text rather than exact words.
+### Step 6 — Answer Generation
 
----
+The retrieved context and question are passed to Gemini Flash. The prompt instructs the model to answer using the provided context and indicate when the answer cannot be found in the PDF.
 
-### Step 4 — Store Embeddings
+## 💻 Getting Started
 
-All embeddings are stored inside a **FAISS Vector Database**.
+### Prerequisites
 
-FAISS enables fast similarity search even for thousands of document chunks.
+- Python 3.10 or a compatible version for the installed dependencies
+- A Google Gemini API key
+- Git
 
----
+### 1. Clone the Repository
 
-### Step 5 — Retrieve Relevant Chunks
-
-When the user asks a question,
-
-- the question is converted into an embedding
-- the Retriever searches FAISS
-- the most relevant chunks are returned
-
-Only these retrieved chunks are sent to the LLM.
-
----
-
-### Step 6 — Generate Response
-
-The retrieved context along with the user's question is passed to **Gemini Flash**, which generates the final answer.
-
----
-
-## 📸 Sample Query
-
-**Question**
-
-```
-What is this PDF about?
+```bash
+git clone https://github.com/PrernaPalsapure/PDF_RAG_Chatbot.git
+cd PDF_RAG_Chatbot
 ```
 
-**Output**
+### 2. Create a Virtual Environment
 
-```
-The PDF discusses...
+```bash
+python -m venv venv
 ```
 
----
+Activate it on Windows:
+
+```bash
+venv\Scripts\activate
+```
+
+### 3. Install Dependencies
+
+Install the packages used by the project:
+
+```bash
+pip install streamlit fastapi "uvicorn[standard]" python-dotenv pydantic langchain langchain-community langchain-google-genai langchain-text-splitters faiss-cpu pypdf
+```
+
+### 4. Configure Your API Key
+
+Create a `.env` file in the project root:
+
+```env
+GOOGLE_API_KEY=your_google_api_key_here
+```
+
+Replace the placeholder with your own API key.
+
+**Security:** Never commit your `.env` file or expose your API key in source code.
+
+### 5. Run the Streamlit Application
+
+```bash
+streamlit run app.py
+```
+
+Open the local URL displayed in your terminal, upload a PDF, and start asking questions.
+
+### 6. Run the FastAPI Backend
+
+Ensure `Data_Science Notes.pdf` is present at the path expected by `api.py`, then run:
+
+```bash
+uvicorn api:app --reload
+```
+
+Open the interactive API documentation at:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+Use the `POST /ask` endpoint to submit questions.
+
+### 7. Explore the Notebook
+
+Open `PDF_RAG_Chatbot.ipynb` in Jupyter Notebook or Google Colab to explore the RAG workflow interactively.
 
 ## 📁 Project Structure
 
-```
+```text
 PDF_RAG_Chatbot/
 │
-├── PDF_RAG_Chatbot.ipynb
-├── README.md
-└── Data_Science Notes.pdf
+├── app.py                  # Streamlit application
+├── api.py                  # FastAPI backend
+├── PDF_RAG_Chatbot.ipynb   # Jupyter Notebook
+├── README.md               # Project documentation
+├── .env                    # Local API credentials (not committed)
+├── .gitignore              # Files excluded from Git
+└── Data_Science Notes.pdf  # Required by the current FastAPI implementation
 ```
 
----
+The PDF and environment files should only be included in the repository if appropriate. Do not commit private documents or credentials.
 
-## 📈 Future Improvements
-
-- Streamlit Web Interface
-- Multiple PDF Upload Support
-- Chat History
-- Conversation Memory
-- Source Page References
-- Deployment using Streamlit Cloud
-
----
-
-## 📚 Concepts Used
+## 📚 Key Concepts
 
 - Retrieval-Augmented Generation (RAG)
 - Semantic Search
 - Vector Embeddings
 - Large Language Models (LLMs)
 - Prompt Engineering
-- FAISS Vector Database
-- LangChain Pipelines
+- Vector Databases
+- REST API Development
+- Request Validation
+- Document Processing
+- LLM Application Development
 
----
+## 🔮 Future Improvements
+
+- Connect the Streamlit frontend to the FastAPI backend.
+- Add support for multiple PDF uploads and document selection.
+- Avoid rebuilding embeddings for every question.
+- Add conversation history and follow-up question support.
+- Display source page references for generated answers.
+- Add automated tests and improved error handling.
+- Deploy the application for public access.
 
 ## 👩‍💻 Author
 
 **Prerna Palsapure**
 
-AI/ML Engineer | Machine Learning | Generative AI | LLM & RAG Applications
-
----
-
+AI/ML Engineer | Python | Machine Learning | Generative AI | LLMs | RAG Applications
 ## ⭐ If you found this project useful, consider giving it a star!
